@@ -1,6 +1,4 @@
 #pragma once
-#ifndef INCLUDE_GUARD_2EE24263_BD1F_4E5D_8CDA_A3217E867BF0
-#define INCLUDE_GUARD_2EE24263_BD1F_4E5D_8CDA_A3217E867BF0
 #include <algorithm>
 #include <cstddef>
 #include<climits>
@@ -253,4 +251,3 @@ namespace PWL
 	}
 	typedef basic_string<char> string;
 }
-#endif
