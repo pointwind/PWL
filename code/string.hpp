@@ -5,6 +5,7 @@
 #include<cstring>
 #include <ostream>
 #include<type_traits>
+
 namespace PWL
 {
 	namespace detail
@@ -57,7 +58,6 @@ namespace PWL
 			}
 		}
 	}
-
 	template<typename CharT, typename Traits = std::char_traits<CharT>>
 	class basic_string
 	{
