@@ -5,7 +5,6 @@
 #include<cstring>
 #include <ostream>
 #include<type_traits>
-
 namespace PWL
 {
 	namespace detail
