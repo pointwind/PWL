@@ -1,4 +1,3 @@
-#pragma once
 #include<new>
 #include <cstddef>
 namespace PWL {
