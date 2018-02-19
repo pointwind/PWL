@@ -247,5 +247,5 @@ namespace PWL
 	std::ostream& operator<<(std::ostream& stream, const basic_string<CharT, Traits>& string) {
 		return stream << string.data();
 	}
-	typedef basic_string<char> string;
+	typedef basic_string<char> string;//normal string
 }
