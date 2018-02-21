@@ -1,3 +1,5 @@
+#ifndef PWL_CODE_DEFAULTALLOC_HPP_
+#define PWL_CORE_DEFAULTALLOC_HPP_
 #include<new>
 #include <cstddef>
 namespace PWL {
@@ -13,3 +15,4 @@ namespace PWL {
 		}
 	};
 }
+#endif
