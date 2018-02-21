@@ -1,3 +1,5 @@
+#ifndef PWL_CODE_STRING_HPP_
+#define PWL_CORE_STRING_HPP_
 #include <algorithm>
 #include <cstddef>
 #include<climits>
@@ -249,3 +251,4 @@ namespace PWL
 	}
 	typedef basic_string<char> string;//normal string
 }
+#endif
