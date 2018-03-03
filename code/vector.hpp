@@ -4,8 +4,5 @@
 #include<cstddef>
 #include<new>
 #include<initializer_list>
-namespace PWL
-{
-	
-}
+namespace PWL{}
 #endif
