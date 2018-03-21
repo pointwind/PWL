@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-
 #define VECTOR_HPP
 #include<cstddef>
 #include<type_traits>
