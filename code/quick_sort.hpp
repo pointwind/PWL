@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PWL_CODE_QUICK_SORT_HPP_
+#define PWL_CORE_QUICK_SORT_HPP_
 #include <algorithm>
 #include <functional>
 #include <vector>
@@ -38,3 +39,4 @@ template<typename iter,typename compare>auto partition(iter first, iter last,com
 	}
 	return first;
 }
+#endif
