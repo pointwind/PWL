@@ -11,7 +11,7 @@ template<typename iter,typename compare>void quick_sort(iter first, iter last,co
 	auto len = last - first;
 	if (len < 2)  return;
 	auto mid1 = ::partition(first ,last ,[&](const auto e) { return com(e, *(first + len / 2)) });
-	auto mid2 = ::partition(mid, last, [&](const auto& e) { return !com(*(first+len/2), e); });
+	auto mid2 = ::partition(mid1, last, [&](const auto& e) { return !com(*(first+len/2), e); });
 	quick_sort(first, mid1,com);
 	quick_sort(mid2,  last,com);
 }
