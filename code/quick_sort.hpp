@@ -1,9 +1,9 @@
-#pragma once
+#ifndef PWL_CODE_QUICK_SORT_HPP_
+#define PWL_CORE_QUICK_SORT_HPP_
 #include <algorithm>
 #include <functional>
 #include <vector>
 #include <iostream>
-#include <ctime>
 template<typename iter, typename compare>decltype(auto) partition(iter first, iter last, compare com)
 {
 	while (true)
@@ -40,3 +40,4 @@ template<typename iter, typename compare = std::less<>>void quick_sort(iter firs
 	quick_sort(first, mid1,com);
 	quick_sort(mid2, last,com);
 }
+#endif
