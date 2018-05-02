@@ -4,16 +4,7 @@
 #include <vector>
 #include <iostream>
 #include <ctime>
-template<typename iter,typename compare>void quick_sort(iter first, iter last,compare com)
-{
-
-	auto len = last - first;
-	if (len < 2)  return;
-	auto mid = partition(first ,last ,[&](auto e) { return com(e, (*first + len) / 2) });
-	quick_sort(first, mid);
-	quick_sort(mid + 1, last);
-}
-template<typename iter,typename compare>auto partition(iter first, iter last,compare com)
+template<typename iter, typename compare>decltype(auto) partition(iter first, iter last, compare com)
 {
 	while (true)
 	{
@@ -25,7 +16,8 @@ template<typename iter,typename compare>auto partition(iter first, iter last,com
 		{
 			break;
 		}
-		while (last != first && !com(last))
+		--last;
+		while (last != first && !com(*last))
 		{
 			last--;
 		}
@@ -37,4 +29,14 @@ template<typename iter,typename compare>auto partition(iter first, iter last,com
 		first++;
 	}
 	return first;
+}
+template<typename iter, typename compare = std::less<>>void quick_sort(iter first, iter last, compare com = compare())
+{
+	const auto len = last - first;
+	if (first >= last)  return;
+	auto mid = *(first + len/2);
+	auto mid1 = ::partition(first, last, [&](const auto& e) { return com(e, mid); });
+	auto mid2 = ::partition(mid1, last, [&](const auto& e) { return !com(mid,e); });
+	quick_sort(first, mid1,com);
+	quick_sort(mid2, last,com);
 }
