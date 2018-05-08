@@ -121,12 +121,12 @@ namespace PWL
 		if(bytes <= 512)
 		{
 			return bytes <= 256 ?
-				bytes <= 128 ? (bytes + Align128 - 1 / Align128 - 1) : (15 + bytes + Align256 - 129 / Align256)
-				: (23 + bytes + Align512 - 257 / Align512);
+				bytes <= 128 ? ((bytes + Align128 - 1) / Align128 - 1) : (15 + (bytes + Align256 - 129) / Align256)
+				: (23 + (bytes + Align512 - 257) / Align512);
 		}
 		return bytes <=2048  ?
-			bytes < 1024 ? (31 + bytes + Align1024 - 513 / Align1024) : (39 + bytes + Align2048 - 1025 / Align2048)
-			: (47 + bytes + Align4096 - 2049 / Align4096);
+			bytes < 1024 ? (31 + (bytes + Align1024 - 513) / Align1024) : (39 + (bytes + Align2048 - 1025) / Align2048)
+			: (47 +( bytes + Align4096 - 2049) / Align4096);
 	}
 
 	inline void* Alloc::M_refill(size_t n)//reffill memory list
