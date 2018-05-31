@@ -1,6 +1,6 @@
 #pragma once
 #include<cstddef>
-#include<type_traits>
+#include"type_traits"
 namespace PWL
 {
 	struct input_iterator_tag { };
@@ -8,6 +8,9 @@ namespace PWL
 	struct forward_iterator_tag : public input_iterator_tag { };
 	struct bidirectional_iterator_tag : public forward_iterator_tag { };
 	struct random_access_iterator_tag : public bidirectional_iterator_tag { };
+
+
+
 	template<
 		class Category,
 		class T,
@@ -16,7 +19,7 @@ namespace PWL
 		class Reference = T &
 	> struct iterator
 	{
-		using terator_category = Category ;
+		using iterator_category = Category ;
 		using value_type = T;
 		using difference_type = Distance;
 		using pointer = Pointer;
@@ -25,9 +28,10 @@ namespace PWL
 	};
 
 
-	template<class Iterator,bool>struct Iterator_trait_impl{};
 
-	template<class Iterator>struct Iterator_trait_impl<Iterator,true>
+	template<class Iterator,bool>struct Iterator_traits_impl{};
+
+	template<class Iterator>struct Iterator_traits_impl<Iterator,true>
 	{
 		using difference_type = typename Iterator::difference_type;
 		using value_type = typename Iterator::value_type;
@@ -35,18 +39,48 @@ namespace PWL
 		using reference = typename Iterator::reference;
 		using iterator_category = typename Iterator::iterator_category;
 	};
-	template<class Iterator,bool>struct iterator_trait_helper{};
-	template<class Iterator>struct iterator_trait_helper<Iterator,true> : public Iterator_trait_impl<Iterator,std::is_convertible<typename Iterator::iterator_category,input_iterator_tag>::value
-																											 ||std::is_convertible<typename Iterator::iterator_category,output_iterator_tag>::value>
-	{};
+	
+	template<class Iterator,bool>struct iterator_traits_helper{};		//jusge is this iterator has  iterator
+	template<class Iterator>struct iterator_traits_helper<Iterator,true> : public 
+																		Iterator_traits_impl<Iterator,std::is_convertible<typename Iterator::iterator_category,input_iterator_tag>::value
+																		 ||std::is_convertible<typename Iterator::iterator_category,output_iterator_tag>::value>{};
+
+	template<typename T>struct has_iterator_cat
+	{
+	private:
+		std::pair<char, char> two;
+		template<typename U>static two test(...);
+		template<typename U>static char test(typename U::iterator_category* = 0);
+	public:
+		static bool value = sizeof(test<T>(0)) == sizeof(char);
+
+	};
+
+	template <class iterator>
+	struct iterator_traits
+		: public iterator_traits_helper<iterator,has_iterator_cat<iterator>::value> {};
 
 
-	template<class T>struct Iterator_Trait<T*>
+	template<class T>struct iterator_traits<T*>
 	{
 		using difference_type = std::ptrdiff_t;
 		using value_type = T;
 		using pointer = T * ;
-		using reference = T&;
+		using reference = T & ;
 		using iterator_category = random_access_iterator_tag;
 	};
+	template<class T>struct iterator_traits<const T*>
+	{
+		using difference_type = std::ptrdiff_t;
+		using value_type =  T;
+		using pointer = const T * ;
+		using reference = const T & ;
+		using iterator_category = random_access_iterator_tag;
+	};
+	//T is the iterator,U is iterator_category
+	template<typename T, typename U, bool = has_iterator_cat<T>::value>
+	struct has_ierator_cat_of
+		: public my_bool_constant<std::is_convertible<typename iterator_traits<T>::iterator_category,U>::value>{};
+
+
 }
