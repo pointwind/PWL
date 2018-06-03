@@ -45,20 +45,20 @@ namespace PWL
 																		Iterator_traits_impl<Iterator,std::is_convertible<typename Iterator::iterator_category,input_iterator_tag>::value
 																		 ||std::is_convertible<typename Iterator::iterator_category,output_iterator_tag>::value>{};
 
-	template<typename T>struct has_iterator_cat
+	template<typename T>struct has_iterator_category
 	{
 	private:
-		std::pair<char, char> two;
-		template<typename U>static two test(...);
+		//std::pair<char, char> two;
+		template<typename U>static std::pair<char, char> test(...);
 		template<typename U>static char test(typename U::iterator_category* = 0);
 	public:
-		static bool value = sizeof(test<T>(0)) == sizeof(char);
+		static const bool value = sizeof(test<T>(0)) == sizeof(char);
 
 	};
 
 	template <class iterator>
 	struct iterator_traits
-		: public iterator_traits_helper<iterator,has_iterator_cat<iterator>::value> {};
+		: public iterator_traits_helper<iterator,has_iterator_category<iterator>::value> {};
 
 
 	template<class T>struct iterator_traits<T*>
@@ -77,10 +77,89 @@ namespace PWL
 		using reference = const T & ;
 		using iterator_category = random_access_iterator_tag;
 	};
+
 	//T is the iterator,U is iterator_category
-	template<typename T, typename U, bool = has_iterator_cat<T>::value>
+	//get some kind of iterator
+	template<typename T, typename U, bool = has_iterator_category<T>::value>
 	struct has_ierator_cat_of
 		: public my_bool_constant<std::is_convertible<typename iterator_traits<T>::iterator_category,U>::value>{};
+
+	template<typename T, typename U>struct has_iterator_cat_of : public my_false_type{};
+
+	template<typename iterator>struct is_input_iterator : public has_iterator_cat_of<iterator,input_iterator_tag>{};
+	template<typename iterator>struct is_output_iterator : public has_iterator_cat_of<iterator, output_iterator_tag> {};
+	template<typename iterator>struct is_forward_iterator : public has_iterator_cat_of<iterator, forward_iterator_tag> {};
+	template<typename iterator>struct is_bidirectional_iterator : public has_iterator_cat_of<iterator, bidirectional_iterator_tag> {};
+	template<typename iterator>struct is_random_access_iterator : public has_iterator_cat_of<iterator, random_access_iterator_tag> {};
+
+	template<typename iterator>struct is_iterator : public my_bool_constant <is_input_iterator<iterator>::value || is_output_iterator<iterator>::value>;
+
+	//get category 
+	template<class iter>typename iterator_traits<iter>::iterator_category iterator_category(const iter&)
+	{
+		using category = typename iterator_traits<iter>::iterator_category;
+		return category();
+	}
+	//get distance type
+	template<class iter>typename iterator_traits<iter>::difference_type* iterator_distance_type(const iter&)
+	{
+		return static_cast<typename iterator_traits<iter>::difference_type*>(0);
+	}
+
+	template<class iter>typename iterator_traits<iter>::value_type* iterator_value_type(const iter&)
+	{
+		return static_cast<typename iterator_traits<iter>::value_type*>(0);
+	}
+
+	//the version o input_iterator_tag
+	template<class inputIt>typename iterator_traits<inputIt>::difference_type distance_dispatch(inputIt first, inputIt last,input_iterator_tag)
+	{
+		typename iterator_traits<inputIt>::difference_type n = 0;
+		while(first != last)
+		{
+			n++;
+			first++;
+		}
+		return n;
+	}
+	//the version for random_access_iterator_tag
+	template<class randomIt>typename iterator_traits<randomIt>::difference_type distance_dispatch(randomIt last, randomIt last,random_access_iterator_tag)
+	{
+		return last - first;
+	}
+	template<class iter>typename iterator_traits<iter>::difference_type distance(iter first, iter last)
+	{
+		return distance_dispatch(first, last, iterator_category(first));
+	}
+
+	//move the iterator
+	template <class inputIt, class distance>void advance_dispatch(inputIt& i, distance n, input_iterator_tag)
+	{
+		while (n--)
+			++i;
+	}
+	template <class randomIt, class distance>void advance_dispatch(randomIt& i, distance n, random_access_iterator_tag)
+	{
+		i += n;
+	}
+	template <class bidirectionalIt, class distance>void advance_dispatch(bidirectionalIt& i, distance n, bidirectional_iterator_tag)
+	{
+		if (n >= 0)
+		{
+			while(n--)
+				i++;
+		}
+		else 
+		{
+			while(n++)
+				i--;
+		}
+	}
+	template <class iterator, class distance>void advance(iterator it,distance n)
+	{
+		advance_dispatch(it, n,iterator_category(iterator));
+	}
+
 
 
 }
