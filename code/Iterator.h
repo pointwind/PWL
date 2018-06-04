@@ -123,7 +123,7 @@ namespace PWL
 		return n;
 	}
 	//the version for random_access_iterator_tag
-	template<class randomIt>typename iterator_traits<randomIt>::difference_type distance_dispatch(randomIt last, randomIt last,random_access_iterator_tag)
+	template<class randomIt>typename iterator_traits<randomIt>::difference_type distance_dispatch(randomIt first, randomIt last,random_access_iterator_tag)
 	{
 		return last - first;
 	}
@@ -157,9 +157,29 @@ namespace PWL
 	}
 	template <class iterator, class distance>void advance(iterator it,distance n)
 	{
-		advance_dispatch(it, n,iterator_category(iterator));
+		advance_dispatch(it, n,iterator_category(it));
 	}
 
+
+
+	/////iterator reverse
+	template<class iterator>struct reverse_iterator
+	{
+	private:
+		iterator current; // get the forward iterator
+	public:
+		using difference_type = typename iterator_traits<iterator>::difference_type;
+		using value_type = typename  iterator_traits<iterator>::value_type;
+		using pointer = typename  iterator_traits<iterator>::pointer;
+		using reference = typename  iterator_traits<iterator>::reference;
+		using iterator_category = typename iterator_traits<iterator>::iterator_category;
+		using iterator_type = iterator;
+		using self = reverse_iterator<iterator>;
+	public:
+		reverse_iterator(){}
+		explicit reverse_iterator(iterator_type i) : current(i){}
+		reverse_iterator(const self& rhs):current(rhs.current){}
+	};
 
 
 }
