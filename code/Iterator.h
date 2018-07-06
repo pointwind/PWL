@@ -9,8 +9,6 @@ namespace PWL
 	struct bidirectional_iterator_tag : public forward_iterator_tag { };
 	struct random_access_iterator_tag : public bidirectional_iterator_tag { };
 
-
-
 	template<
 		class Category,
 		class T,
