@@ -179,8 +179,67 @@ namespace PWL
 		using self = reverse_iterator<iterator>;
 	public:
 		reverse_iterator(){}
-		explicit reverse_iterator(iterator_type i) : current(i){}
+		explicit reverse_iterator(iterator_type ite) : current(ite){}
 		reverse_iterator(const self& rhs):current(rhs.current){}
+
+	public:
+		iterator_type base() const
+		{
+			return current;
+		}
+		reference operator*()// for-iterator's move-forward   ?
+		{
+			auto tmp = current;
+			return *--tmp;
+		}
+		pointer operator->()
+		{
+			return &(operator*());
+		}
+		self& operator++()
+		{
+			--current;
+			return *this;
+		}
+		self& operator++(int)
+		{
+			auto old_value = *this;
+			--current;
+			return old_value;
+		}
+		self& operator--()
+		{
+			++current;
+			return *this;
+		}
+		self& operator--(int)
+		{
+			auto old_value = *this;
+			++current;
+			return old_value;
+		}
+		self& operator+=(difference_type n)
+		{
+			current -= n;
+			return *this;
+		}
+		self operator+(difference_type n)
+		{
+			return self(current - n);
+		}
+		self& operator-=(difference_type n)
+		{
+			current += n;
+			return *this;
+		}
+		self operator-(difference_type n)
+		{
+			return self(current + n);
+		}
+		self operator[](difference_type n)
+		{
+			return *(*this + n);
+		}
 	};
 
 
