@@ -1,6 +1,8 @@
 #pragma once
 #include<cstddef>
-#include"type_traits"
+#include<utility>
+#include "type_traits.h"
+
 namespace PWL
 {
 	struct input_iterator_tag { };
@@ -8,6 +10,8 @@ namespace PWL
 	struct forward_iterator_tag : public input_iterator_tag { };
 	struct bidirectional_iterator_tag : public forward_iterator_tag { };
 	struct random_access_iterator_tag : public bidirectional_iterator_tag { };
+
+
 
 	template<
 		class Category,
@@ -44,7 +48,7 @@ namespace PWL
 																		 ||std::is_convertible<typename Iterator::iterator_category,output_iterator_tag>::value>{};
 
 	template<typename T>struct has_iterator_category
-	{
+	{	
 	private:
 		//std::pair<char, char> two;
 		template<typename U>static std::pair<char, char> test(...);
@@ -76,13 +80,13 @@ namespace PWL
 		using iterator_category = random_access_iterator_tag;
 	};
 
-	//T is the iterator,U is iterator_category
+	//T is the iterator,U is iterator_category_tag
 	//get some kind of iterator
 	template<typename T, typename U, bool = has_iterator_category<T>::value>
-	struct has_ierator_cat_of
+	struct has_iterator_cat_of
 		: public my_bool_constant<std::is_convertible<typename iterator_traits<T>::iterator_category,U>::value>{};
 
-	template<typename T, typename U>struct has_iterator_cat_of : public my_false_type{};
+	template<typename T, typename U>struct has_iterator_cat_of <T,U,false>: public my_false_type{};
 
 	template<typename iterator>struct is_input_iterator : public has_iterator_cat_of<iterator,input_iterator_tag>{};
 	template<typename iterator>struct is_output_iterator : public has_iterator_cat_of<iterator, output_iterator_tag> {};
@@ -115,8 +119,8 @@ namespace PWL
 		typename iterator_traits<inputIt>::difference_type n = 0;
 		while(first != last)
 		{
-			n++;
-			first++;
+			++n;
+			++first;
 		}
 		return n;
 	}
@@ -145,12 +149,12 @@ namespace PWL
 		if (n >= 0)
 		{
 			while(n--)
-				i++;
+				++i;
 		}
 		else 
 		{
 			while(n++)
-				i--;
+				++i;
 		}
 	}
 	template <class iterator, class distance>void advance(iterator it,distance n)
