@@ -12,5 +12,5 @@ namespace PWL
 
 	template<class lhs, class rhs>struct pair;
 	template<class T>struct is_pair : my_false_type{};
-	template<class lhs,class rhs>struct is_pair : my_true_type{};
+	template<class T1,class T2>struct is_pair<pair<T1,T2>> : my_true_type{};
 }

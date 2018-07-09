@@ -88,13 +88,13 @@ namespace PWL
 
 	template<typename T, typename U>struct has_iterator_cat_of <T,U,false>: public my_false_type{};
 
-	template<typename iterator>struct is_input_iterator : public has_iterator_cat_of<iterator,input_iterator_tag>{};
-	template<typename iterator>struct is_output_iterator : public has_iterator_cat_of<iterator, output_iterator_tag> {};
-	template<typename iterator>struct is_forward_iterator : public has_iterator_cat_of<iterator, forward_iterator_tag> {};
-	template<typename iterator>struct is_bidirectional_iterator : public has_iterator_cat_of<iterator, bidirectional_iterator_tag> {};
-	template<typename iterator>struct is_random_access_iterator : public has_iterator_cat_of<iterator, random_access_iterator_tag> {};
+	template<typename iterator>struct is_input_iterator :  has_iterator_cat_of<iterator,input_iterator_tag>{};
+	template<typename iterator>struct is_output_iterator :  has_iterator_cat_of<iterator, output_iterator_tag> {};
+	template<typename iterator>struct is_forward_iterator :  has_iterator_cat_of<iterator, forward_iterator_tag> {};
+	template<typename iterator>struct is_bidirectional_iterator :  has_iterator_cat_of<iterator, bidirectional_iterator_tag> {};
+	template<typename iterator>struct is_random_access_iterator :  has_iterator_cat_of<iterator, random_access_iterator_tag> {};
 
-	template<typename iterator>struct is_iterator : public my_bool_constant <is_input_iterator<iterator>::value || is_output_iterator<iterator>::value>;
+	template<typename iterator>struct is_iterator :  my_bool_constant < is_input_iterator<iterator>::value || is_output_iterator<iterator>::value>{};
 
 	//get category 
 	template<class iter>typename iterator_traits<iter>::iterator_category iterator_category(const iter&)
@@ -103,14 +103,14 @@ namespace PWL
 		return category();
 	}
 	//get distance type
-	template<class iter>typename iterator_traits<iter>::difference_type* iterator_distance_type(const iter&)
+	template<class Iter>typename iterator_traits<Iter>::difference_type* iterator_distance_type(const Iter&)
 	{
-		return static_cast<typename iterator_traits<iter>::difference_type*>(0);
+		return static_cast<typename iterator_traits<Iter>::difference_type*>(0);
 	}
 
-	template<class iter>typename iterator_traits<iter>::value_type* iterator_value_type(const iter&)
+	template<class Iter>typename iterator_traits<Iter>::value_type* iterator_value_type(const Iter&)
 	{
-		return static_cast<typename iterator_traits<iter>::value_type*>(0);
+		return static_cast<typename iterator_traits<Iter>::value_type*>(0);
 	}
 
 	//the version o input_iterator_tag
@@ -239,6 +239,42 @@ namespace PWL
 		self operator[](difference_type n)
 		{
 			return *(*this + n);
+		}
+
+		template<class Iterator>typename reverse_iterator<Iterator>::difference_type
+		operator-(const reverse_iterator<Iterator>& rhs)
+		{
+			return this.base() - rhs.base();
+		}
+		template<class Iterator>typename reverse_iterator<Iterator>::difference_type
+			operator==(const reverse_iterator<Iterator>& rhs)
+		{
+			return this.base() == rhs.base();
+		}
+		template<class Iterator>typename reverse_iterator<Iterator>::difference_type
+			operator<(const reverse_iterator<Iterator>& rhs)
+		{
+			return this.base() < rhs.base();
+		}
+		template<class Iterator>typename reverse_iterator<Iterator>::difference_type
+			operator>( reverse_iterator<Iterator>& rhs)
+		{
+			return this.base() > rhs.base();
+		}
+		template<class Iterator>typename reverse_iterator<Iterator>::difference_type
+			operator<=(const reverse_iterator<Iterator>& rhs)
+		{
+			return !(this.base() > rhs.base());
+		}
+		template<class Iterator>typename reverse_iterator<Iterator>::difference_type
+			operator>=(const reverse_iterator<Iterator>& rhs)
+		{
+			return !(this.base() < rhs.base());
+		}
+		template<class Iterator>typename reverse_iterator<Iterator>::difference_type
+			operator!=(const reverse_iterator<Iterator>& rhs)
+		{
+			return !(this.base() == rhs.base());
 		}
 	};
 
