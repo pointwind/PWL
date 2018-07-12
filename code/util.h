@@ -7,11 +7,11 @@ namespace PWL
 	{
 		return static_cast<typename std::remove_reference<T>::type&&>(arg);
 	}
-	template<class T>T&& forward(typename std::remove_reference<T>::type& arg)
+	template<class T>constexpr T&& forward(typename std::remove_reference<T>::type& arg)
 	{
 		return static_cast<T&&>(arg);
 	}
-	template<class T>T&& forward(typename std::remove_reference<T>::type&& arg)
+	template<class T>constexpr T&& forward(typename std::remove_reference<T>::type&& arg)//rvalue can't forward to lvalue
 	{
 		static_assert(!std::is_lvalue_reference<T>::value, "bad forward");
 		return static_cast<T&&>(arg);
@@ -152,5 +152,39 @@ namespace PWL
 		}
 	};
 
+	template<class T1,class T2>bool operator==(const pair<T1, T2>& lhs, const pair<T1, T2>& rhs)
+	{
+		return lhs.first == rhs.first && lhs.second == rhs.second;
+	}
+	template <class T1, class T2>bool operator<(const pair<T1, T2>& lhs, const pair<T1, T2>& rhs)
+	{
+		return lhs.first < rhs.first || (lhs.first == rhs.first && lhs.second < rhs.second);
+	}
+	template <class T1, class T2>bool operator>(const pair<T1, T2>& lhs, const pair<T1, T2>& rhs)
+	{
+		return rhs<lhs;
+	}
+	template <class T1, class T2>bool operator<=(const pair<T1, T2>& lhs, const pair<T1, T2>& rhs)
+	{
+		return !(lhs>rhs);
+	}
+	template <class T1, class T2>bool operator>=(const pair<T1, T2>& lhs, const pair<T1, T2>& rhs)
+	{
+		return !(rhs<lhs);
+	}
+
+	template<class T1, class T2>bool operator!=(const pair<T1, T2>& lhs, const pair<T1, T2>& rhs)
+	{
+		return !(lhs== rhs);
+	}
+	template <class T1, class T2>
+	void swap(pair<T1, T2>& lhs, pair<T1, T2>& rhs) noexcept
+	{
+		lhs.swap(rhs);
+	}
+	template<class T1,class T2>pair<T1,T2> make_pair(T1&& first, T2&& second)
+	{
+		return pair<T1, T2>(PWL::forward<T1>(first), PWL::forward<T2>(second));
+	}
 
 }
