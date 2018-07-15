@@ -3,19 +3,28 @@
 #include"Iterator.h"
 namespace PWL
 {
-	template<class T>constexpr T& max(const T& lhs,const T& rhs)
+#ifdef max
+#pragma message("#undefing marco max")
+#undef max
+#endif // max
+
+#ifdef min
+#pragma message("#undefing marco min")
+#undef min
+#endif // min
+	template<class T>constexpr const T& max(const T& lhs,const T& rhs)
 	{
 		return lhs < rhs ? rhs : lhs;
 	}
-	template<class T>constexpr T& min(const T& lhs,const T& rhs)
+	template<class T>constexpr const T& min(const T& lhs,const T& rhs)
 	{
 		return lhs < rhs ? lhs : rhs;
 	}
-	template<class T,class compare>constexpr T& max(const T& lhs, const T& rhs,compare com)
+	template<class T,class compare>constexpr const T& max(const T& lhs, const T& rhs,compare com)
 	{
 		return com(lhs,rhs) ? rhs : lhs;
 	}
-	template<class T,class compare>constexpr T& min(const T& lhs, const T& rhs,compare com)
+	template<class T,class compare>constexpr const T& min(const T& lhs, const T& rhs,compare com)
 	{
 		return com(lhs,rhs) ? lhs : rhs;
 	}
