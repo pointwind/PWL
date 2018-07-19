@@ -73,7 +73,7 @@ namespace PWL
 			range_init(list.begin(), list.end());
 		}
 		Vector& operator=(const Vector& rhs);
-		Vector& operator=(const Vector&& rhs) noexcept;
+		Vector& operator=(Vector&& rhs) noexcept;
 		Vector& operator=(const std::initializer_list<value_type>& list)
 		{
 			Vector tmp(list.begin(), list.end());
@@ -317,4 +317,99 @@ namespace PWL
 
 		void      reinsert(size_type size);
 	};
+
+
+	template<class T>Vector<T>& Vector<T>::operator=(const Vector& rhs)
+	{
+		if(this != rhs)
+		{
+			const auto len = rhs.size();
+			if(len > capacity())
+			{
+				Vector tmp(rhs.begin(), rhs.end());
+				swap(tmp);
+			}
+			else if(size() >= len)
+			{
+				auto i = PWL::copy(rhs.begin(), rhs.end(), begin());
+			}
+			else				//   size < len < capacity 
+			{
+				PWL::copy(rhs.begin(), rhs.begin() + size(), begin());      //copy [begin ,begin + size] to local[begin,end]
+				PWL::uninit_copy(rhs.begin() + size(), rhs.end(), end());	//init copt [begin+size,end] to local[end,his end]
+				cap_ = end_ = begin_ + len;
+			}
+		}
+		return *this;
+	}
+	template<class T>
+	Vector<T>& Vector<T>::operator=(Vector&& rhs) noexcept
+	{
+		destroy_and_recover(begin_, end_, cap_ - begin_);
+		begin_ = rhs.begin_;
+		end_ = rhs.end_;
+		cap_ = rhs.cap_;
+		rhs.begin_ = nullptr;
+		rhs.end_ = nullptr;
+		rhs.cap_ = nullptr;
+		return *this;
+	}
+
+	template<class T>
+	void Vector<T>::reserve(size_type n)
+	{
+		if(capacity() < n)
+		{
+			THROW_LENGTH_ERROR_IF(n > max_size(),
+				"n can not larger than max_size() in vector<T>::reserve(n)");
+			const auto old_size = size();
+			auto tmp = data_allocator::allocate(n);
+			PWL::uninit_move(begin_, end_, tmp);
+			data_allocator::deallocate(begin_, cap_ - begin_);
+			begin_ = tmp;
+			end_ = tmp + old_size;
+			cap_ = begin_ + n;
+		}
+	}
+
+	template <class T>
+	void Vector<T>::shrink_to_fit()
+	{
+		if (end_ < cap_)
+		{
+			reinsert(size());
+		}
+	}
+
+
+
+	// 在 pos 位置就地构造元素，避免额外的复制或移动开销
+	template <class T>
+	template <class ...Args>
+	typename Vector<T>::iterator
+		Vector<T>::emplace(const_iterator pos, Args&& ...args)
+	{
+		PWL_DEBUG(pos >= begin() && pos <= end());
+		iterator xpos = const_cast<iterator>(pos);
+		const size_type n = xpos - begin_;
+		if(end_ == xpos && end_ != cap_)
+		{
+			data_allocator::construct(PWL::addressof(*end_), PWL::forward<Args>(args)...);
+			++end_;
+		}
+		else if(end_ != cap_)
+		{
+			
+		}
+		else
+		{
+			
+		}
+		return begin_ + n;
+
+
+	}
+
+
+
 }
