@@ -233,7 +233,7 @@ namespace PWL
 		void push_back(const value_type& value);
 		void push_back(value_type&& value)
 		{
-			emplace_back(mystl::move(value));
+			emplace_back(PWL::move(value));
 		}
 
 		void pop_back();
@@ -270,7 +270,7 @@ namespace PWL
 		//resize/reverse
 		void resize(size_type count) { resize(count, value_type()); }
 		void resize(size_type count, const value_type& value);
-		void swap(vector& other) noexcept;
+		void swap(Vector& other) noexcept;
 		void reverse() { PWL::reverse(begin(), end()); }
 
 
@@ -392,24 +392,136 @@ namespace PWL
 		PWL_DEBUG(pos >= begin() && pos <= end());
 		iterator xpos = const_cast<iterator>(pos);
 		const size_type n = xpos - begin_;
-		if(end_ == xpos && end_ != cap_)
+		if(end_ == xpos && end_ != cap_)// == end
 		{
-			data_allocator::construct(PWL::addressof(*end_), PWL::forward<Args>(args)...);
+			data_allocator::construct(PWL::address_of(*end_), PWL::forward<Args>(args)...);
 			++end_;
 		}
-		else if(end_ != cap_)
+		else if(end_ != cap_)//    begin<=end<cap
 		{
-			
+			auto new_end = end_;
+			data_allocator::construct(address_of(*end), *(end_ - 1));
+			++new_end;
+			PWL::copy_backward(xpos, end_ - 1, end_);
+			*xpos = value_type(PWL::forward<Args>(args)...);
+		}
+		else//end == cap
+		{
+			reallocate_emplace(xpos, PWL::forward<Args>(args)...);
+		}
+		return begin() + n;
+	}
+	//尾部构造
+	template <class T>
+	template <class ...Args>
+	void Vector<T>::emplace_back(Args&& ...args)
+	{
+		if(end_ < cap_)
+		{
+			data_allocator::construct(PWL::address_of(*end_), PWL::forward<Args>(args)...);
+			++end_;
 		}
 		else
 		{
-			
+			reallocate_emplace(end_, PWL::forward<Args>(args)...);
 		}
-		return begin_ + n;
-
-
 	}
 
+	template<class T>
+	void Vector<T>::push_back(const value_type& value)
+	{
+		if(end_ != cap_)
+		{
+			data_allocator::construct(PWL::address_of(*end_), value);
+			++end_;
+		}
+		else
+		{
+			reallocate_insert(end_, value);
+		}
+	}
+
+	template <class T>
+	void Vector<T>::pop_back()
+	{
+		PWL_DEBUG(!empty());
+		data_allocator::destroy(end_ - 1);
+		--end_;
+	}
+
+	//在pos出插入
+	template<class T>typename Vector<T>::iterator Vector<T>::insert(const_iterator pos, const T& value)
+	{
+		PWL_DEBUG(pos >= begin() && pos <= end());
+		iterator xpos = const_cast<iterator>(pos);
+		const size_type n = pos - begin_;
+		if (end_ == xpos && end_ != cap_)// == end
+		{
+			data_allocator::construct(PWL::address_of(*end_), value);
+			++end_;
+		}
+		else if (end_ != cap_)//    begin<=end<cap
+		{
+			auto new_end = end_;
+			data_allocator::construct(address_of(*end), *(end_ - 1));
+			++new_end;
+			auto value_copy = value;	//避免因复制改变
+			PWL::copy_backward(xpos, end_ - 1, end_);
+			*xpos = PWL::move(value_copy);
+		}
+		else//end == cap
+		{
+			reallocate_insert(xpos, value);
+		}
+		return begin() + n;
+	}
+
+
+	//在pos出插入
+	template<class T>typename Vector<T>::iterator Vector<T>::erase(const_iterator pos)
+	{
+		PWL_DEBUG(pos >= begin() && pos < end());
+		iterator xpos = begin_ + (pos - begin());
+		PWL::move(xpos + 1, end_, xpos);//move back
+		data_allocator::destroy(end_ - 1);
+		--end_;
+		return xpos;
+	}
+	template <class T>
+	typename Vector<T>::iterator
+		Vector<T>::erase(const_iterator first, const_iterator last)
+	{
+		MYSTL_DEBUG(first >= begin() && last <= end() && !(last < first));
+		const auto n = first - begin();
+		iterator r = begin_ + (first - begin());
+		data_allocator::destroy(PWL::move(r + (last - first), end_, r),end_);
+		end_ -= last - first;
+		return begin_ + n;
+	}
+
+	template <class T>
+	void Vector<T>::resize(size_type count, const value_type& value)
+	{
+		if(count <size())
+		{
+			erase(begin_ + count, end_);
+		}
+		else
+		{
+			insert(end_, count - size(), value);
+		}
+	}
+
+	template <class T>
+	void Vector<T>::swap(Vector<T>& other) noexcept
+	{
+		if (this != &other)
+		{
+			PWL::swap(begin_, other.begin_);
+			PWL::swap(end_, other.end_);
+			PWL::swap(cap_, other.cap_);
+		}
+	}
 
 
 }
