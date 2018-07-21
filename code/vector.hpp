@@ -271,7 +271,7 @@ namespace PWL
 		void resize(size_type count) { resize(count, value_type()); }
 		void resize(size_type count, const value_type& value);
 		void swap(Vector& other) noexcept;
-		void reverse() { PWL::reverse(begin(), end()); }
+		//void reverse() { PWL::reverse(begin(), end()); }
 
 
 
@@ -450,7 +450,8 @@ namespace PWL
 	}
 
 	//在pos出插入
-	template<class T>typename Vector<T>::iterator Vector<T>::insert(const_iterator pos, const T& value)
+	template<class T>typename Vector<T>::iterator
+	Vector<T>::insert(const_iterator pos, const T& value)
 	{
 		PWL_DEBUG(pos >= begin() && pos <= end());
 		iterator xpos = const_cast<iterator>(pos);
@@ -478,7 +479,8 @@ namespace PWL
 
 
 	//在pos出插入
-	template<class T>typename Vector<T>::iterator Vector<T>::erase(const_iterator pos)
+	template<class T>typename Vector<T>::iterator
+	Vector<T>::erase(const_iterator pos)
 	{
 		PWL_DEBUG(pos >= begin() && pos < end());
 		iterator xpos = begin_ + (pos - begin());
@@ -523,5 +525,256 @@ namespace PWL
 		}
 	}
 
+	//helper function------------------------
 
+	template<class T>void Vector<T>::try_init() noexcept
+	{
+		try
+		{
+			begin_ = data_allocator::allocate(16);
+			end_ = begin_;
+			cap_ = begin_ + 16;
+		}
+		catch(...)
+		{
+			begin_ = nullptr;
+			end_ = nullptr;
+			cap_ = nullptr;
+		}
+	}
+
+	template <class T>
+	void Vector<T>::init_space(size_type size, size_type cap)
+	{
+		try
+		{
+			begin_ = data_allocator::allocate(cap);
+			end_ = begin_ + size;
+			cap_ = begin_ + cap;
+		}
+		catch (...)
+		{
+			begin_ = nullptr;
+			end_ = nullptr;
+			cap_ = nullptr;
+			throw;
+		}
+	}
+	
+	template <class T>
+	void Vector<T>::fill_init(size_type n, const value_type& value)
+	{
+		const size_type init_size = PWL::max(static_cast<size_type>(16), n);
+		init_space(n, init_size);
+		PWL::uninit_fill_n(begin_, n, value);
+	}
+
+	template <class T>
+	template <class Iter>
+	void Vector<T>::
+		range_init(Iter first, Iter last)
+	{
+		const size_type init_size = PWL::max(static_cast<size_type>(last - first),
+			static_cast<size_type>(16));
+		init_space(static_cast<size_type>(last - first), init_size);
+		PWL::uninit_copy(first, last, begin_);
+	}
+
+	template <class T>
+	void Vector<T>::
+		destroy_and_recover(iterator first, iterator last, size_type n)
+	{
+		data_allocator::destroy(first, last);
+		data_allocator::deallocate(first, n);
+	}
+
+	template <class T>
+	typename Vector<T>::size_type
+		Vector<T>::
+		get_new_cap(size_type add_size)
+	{
+		const auto old_size = capacity();
+		THROW_LENGTH_ERROR_IF(old_size > max_size() - add_size,
+			"vector<T>'s size too big");
+		if(old_size > max_size() - old_size / 2)		//can't expance double,it's too big
+		{
+			return old_size + add_size > max_size() - 16
+				? old_size + add_size : old_size + add_size + 16;
+		}
+		const size_type new_size = old_size == 0
+			? PWL::max(add_size, static_cast<size_type>(16))
+			: PWL::max(old_size + old_size / 2, old_size + add_size);
+		return new_size;
+	}
+
+	template <class T>
+	void Vector<T>::
+		fill_assign(size_type n, const value_type& value)
+	{
+		if(n > capacity())
+		{
+			Vector tmp(n, value);
+			swap(tmp);
+		}
+		else if(n > size())
+		{
+			PWL::fill(begin(), end(), value);
+			end_ = PWL::uninit_fill_n(end_, n - size(), value);
+		}
+		else
+		{
+			erase(PWL::fill_n(begin_, n, value), end_);
+		}
+	}
+
+	template <class T>
+	template <class IIter>
+	void Vector<T>::
+		copy_assign(IIter first, IIter last, input_iterator_tag)
+	{
+		auto cur = begin_;
+		for (; first != last && cur != end_; ++first, ++cur)
+		{
+			*cur = *first;
+		}
+		if (first == last)
+		{
+			erase(cur, end_);
+		}
+		else
+		{
+			insert(end_, first, last);
+		}
+	}
+
+	template <class T>
+	template <class IIter>
+	void Vector<T>::
+		copy_assign(IIter first, IIter last, forward_iterator_tag)
+	{
+		const size_type len = PWL::distance(first, last);
+		if (len > capacity())
+		{
+			Vector tmp(first, last);
+			swap(tmp);
+		}
+		else if (len <= size())
+		{
+			auto new_end = PWL::copy(first, last, begin_);
+			data_allocator::destroy(new_end, end_);
+			end_ = new_end;
+		}
+		else
+		{
+			auto mid = first;
+			PWL::advance(mid, size());
+			PWL::copy(first, mid, begin_);
+			auto new_end = PWL::uninit_copy(mid, last, end_);
+			end_ = new_end;
+		}
+	}
+
+	template <class T>
+	template <class ...Args>
+	void Vector<T>::
+		reallocate_emplace(iterator pos, Args&& ...args)
+	{
+		const auto new_size = get_new_cap(1);
+		auto new_begin = data_allocator::allocate(new_size);
+		auto new_end = new_begin;
+		try
+		{
+			new_end = PWL::uninit_move(begin_, pos, new_begin);
+			data_allocator::construct(PWL::address_of(*new_end), PWL::forward<Args>(args)...);
+			++new_end;
+			new_end = PWL::uninit_move(pos, end_, new_end);
+		}
+		catch(...)
+		{
+			data_allocator::deallocate(new_begin, new_size);
+			throw;
+		}
+		destroy_and_recover(begin_, end_, cap_ - begin_);
+		begin_ = new_begin;
+		end_ = new_end;
+		cap_ = new_begin + new_size;
+	}
+
+	template <class T>
+	void Vector<T>::
+		reallocate_insert(iterator pos, const value_type& value)
+	{
+		const auto new_size = get_new_cap(1);
+		auto new_begin = data_allocator::allocate(new_size);
+		auto new_end = new_begin;
+		const value_type& value_copy = value;
+		try
+		{
+			new_end = PWL::uninit_move(begin_, pos, new_begin);
+			data_allocator::construct(PWL::address_of(*new_end), value_copy);
+			++new_end;
+			new_end = PWL::uninit_move(pos, end_, new_end);
+		}
+		catch (...)
+		{
+			data_allocator::deallocate(new_begin, new_size);
+			throw;
+		}
+		destroy_and_recover(begin_, end_, cap_ - begin_);
+		begin_ = new_begin;
+		end_ = new_end;
+		cap_ = new_begin + new_size;
+	}
+
+	template <class T>
+	typename Vector<T>::iterator
+		Vector<T>::
+		fill_insert(iterator pos, size_type n, const value_type& value)
+	{
+		if (n == 0)
+			return pos;
+		const auto xpos = pos - begin_;
+		const value_type value_copy = value;
+		if(static_cast<size_type>(cap_ - end_) >= n)  //enough
+		{
+			const size_type after_elems = end_ - pos;
+			auto old_end = end_;
+			if(after_elems > n)
+			{
+				PWL::uninit_copy(end_ - n, end_, end_);
+				end_ += n;
+				PWL::move_backward(pos, old_end - n, old_end);
+				PWL::uninit_fill_n(pos, n, value_copy);
+			}
+			else
+			{
+				end_ = PWL::uninit_fill_n(end_, n - after_elems, value_copy);
+				end_ = PWL::uninit_move(pos, old_end, end_);
+				PWL::uninit_fill_n(pos, after_elems, value_copy);
+			}
+		}
+		else
+		{
+			const auto new_size = get_new_cap(n);
+			auto new_begin = data_allocator::allocate(new_size);
+			auto new_end = new_begin;
+			try
+			{
+				new_end = PWL::uninit_move(begin_, pos, new_begin);
+				new_end = PWL::uninit_fill_n(new_end, n, value);
+				new_end = PWL::uninit_move(pos, end_, new_end);
+			}
+			catch (...)
+			{
+				destroy_and_recover(new_begin, new_end, new_size);
+				throw;
+			}
+			data_allocator::deallocate(begin_, cap_ - begin_);
+			begin_ = new_begin;
+			end_ = new_end;
+			cap_ = begin_ + new_size;
+		}
+		return begin_ + xpos;
+		
+	}
 }
