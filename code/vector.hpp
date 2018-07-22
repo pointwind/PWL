@@ -777,4 +777,116 @@ namespace PWL
 		return begin_ + xpos;
 		
 	}
+
+	template<class T>
+	template <class IIter>
+	void      Vector<T>::copy_insert(iterator pos, IIter first, IIter last)
+	{
+		if (first == last)
+		{
+			return;
+		}
+		const auto n = PWL::distance(first, last);
+		if((cap_ - end_) > n)
+		{
+			const size_type after_elems = end_ - pos;
+			auto old_end = end_;
+			if (after_elems > n)
+			{
+				PWL::uninit_copy(end_ - n, end_, end_);
+				end_ += n;
+				PWL::move_backward(pos, old_end - n, old_end);
+				PWL::uninit_copy(first,last,pos);
+			}
+			else
+			{
+				auto mid = first;
+				PWL::advance(mid, after_elems);
+				end_ = PWL::uninit_copy(mid, last, end_);
+				end_ = PWL::uninit_move(pos, old_end, end_);
+				PWL::uninit_copy(first,mid,pos);
+			}
+		}
+		else
+		{
+			const auto new_size = get_new_cap(n);
+			auto new_begin = data_allocator::allocate(new_size);
+			auto new_end = new_begin;
+			try
+			{
+				new_end = PWL::uninit_move(begin_, pos, new_begin);
+				new_end = PWL::uninit_copy(first,last,new_end);
+				new_end = PWL::uninit_move(pos, end_, new_end);
+			}
+			catch (...)
+			{
+				destroy_and_recover(new_begin, new_end, new_size);
+				throw;
+			}
+			data_allocator::deallocate(begin_, cap_ - begin_);
+			begin_ = new_begin;
+			end_ = new_end;
+			cap_ = begin_ + new_size;
+		}
+
+	}
+
+	template <class T>
+	void Vector<T>::reinsert(size_type size)
+	{
+		auto new_begin = data_allocator::allocate(size);
+		try
+		{
+			PWL::uninit_move(begin_, end_, new_begin);
+		}
+		catch (...)
+		{
+			data_allocator::deallocate(new_begin, size);
+			throw;
+		}
+		begin_ = new_begin;
+		end_ = begin_ + size;
+		cap_ = begin_ + size;
+	}
+
+
+	//operate
+	template<class T>bool operator==(const Vector<T>& lhs, const Vector<T>& rhs)
+	{
+		return lhs.size() == rhs.size() &&
+			PWL::equal(lhs.begin(), lhs.end(), rhs.begin());
+	}
+
+	template<class T>bool operator<(const Vector<T>& lhs, const Vector<T>& rhs)
+	{
+		return PWL::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
+	}
+
+	template<class T>bool operator!=(const Vector<T>& lhs, const Vector<T>& rhs)
+	{
+		return !(lhs != rhs);
+	}
+
+	template <class T>
+	bool operator>(const Vector<T>& lhs, const Vector<T>& rhs)
+	{
+		return rhs < lhs;
+	}
+
+	template <class T>
+	bool operator<=(const Vector<T>& lhs, const Vector<T>& rhs)
+	{
+		return !(rhs < lhs);
+	}
+
+	template <class T>
+	bool operator>=(const Vector<T>& lhs, const Vector<T>& rhs)
+	{
+		return !(lhs < rhs);
+	}
+
+	template<class T>void swap(const Vector<T>& lhs, const Vector<T>& rhs)
+	{
+		lhs.swap(rhs);
+	}
 }
