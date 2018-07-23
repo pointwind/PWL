@@ -4,14 +4,14 @@
 #include<climits>
 
 
-#include"construct.h"
+#include"Construct.h"
 #include"algorithm_base.h"
 #include"unintialized.h"
 
 //本文件用于高级动态内存管理
 namespace PWL
 {
-	template<class T>constexpr const T* addressof(T& value) noexcept
+	template<class T>constexpr const T* address_of(T& value) noexcept
 	{
 		return &value;
 	}
@@ -51,7 +51,7 @@ namespace PWL
 		
 		~temporary_buffer()
 		{
-			PWL::destroy(buffer,buffer+len);
+			PWL::Destroy(buffer,buffer+len);
 			free(buffer);
 		}
 
@@ -67,7 +67,7 @@ namespace PWL
 		void initialize_buffer(const T&,std::true_type);
 		void initialize_buffer(const T& value,std::false_type)
 		{
-			PWL::uninit_fill_n(buffer, len, value);
+			PWL::Uninit_Fill_N(buffer, len, value);
 		}
 
 	private:

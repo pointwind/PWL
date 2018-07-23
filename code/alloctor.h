@@ -1,6 +1,6 @@
 #pragma once
 #include<cstddef>
-#include"construct.h"
+#include"Construct.h"
 #include"util.h"
 namespace PWL
 {
@@ -15,69 +15,69 @@ namespace PWL
 		using size_type = size_t;
 		using difference_type = std::ptrdiff_t;
 	public:
-		static T* allocate();
-		static T* allocate(size_type n);
+		static T* Allocate();
+		static T* Allocate(size_type n);
 
-		static void deallocate(T* ptr);
-		static void deallocate(T* ptr, size_type n);
+		static void Deallocate(T* ptr);
+		static void Deallocate(T* ptr, size_type n);
 
-		static void construct(T* ptr);
-		static void construct(T* ptr, const T& value);
-		static void construct(T* ptr, T&& value);
+		static void Construct(T* ptr);
+		static void Construct(T* ptr, const T& value);
+		static void Construct(T* ptr, T&& value);
 
-		template<class... Args>static void construct(T* ptr, Args&&... args);
+		template<class... Args>static void Construct(T* ptr, Args&&... args);
 
-		static void destroy(T* ptr);
-		static void destroy(T* first, T* last);
+		static void Destroy(T* ptr);
+		static void Destroy(T* first, T* last);
 	};
-	template<class T>T* allocator<T>::allocate()
+	template<class T>T* allocator<T>::Allocate()
 	{
 		return static_cast<T*>(::operator new(sizeof(T)));
 	}
-	template<class T>T* allocator<T>::allocate(size_type n)
+	template<class T>T* allocator<T>::Allocate(size_type n)
 	{
 		if (n == 0)
 			return nullptr;
 		return static_cast<T*>(::operator new(n * sizeof(T)));
 	}
 
-	template<class T>void allocator<T>::deallocate(T* ptr)
+	template<class T>void allocator<T>::Deallocate(T* ptr)
 	{
 		if (ptr == nullptr)
 			return ;
 		::operator delete(ptr);
 	}
-	template<class T>void allocator<T>::deallocate(T* ptr,size_type n)
+	template<class T>void allocator<T>::Deallocate(T* ptr,size_type )
 	{
 		if (ptr == nullptr)
 			return;
 		::operator delete(ptr);
 	}
 
-	template<class T>void allocator<T>::construct(T* ptr)
+	template<class T>void allocator<T>::Construct(T* ptr)
 	{
-		PWL::construct(ptr);
+		PWL::Construct(ptr);
 	}
-	template<class T>void allocator<T>::construct(T* ptr, const T& value)
+	template<class T>void allocator<T>::Construct(T* ptr, const T& value)
 	{
-		PWL::construct(ptr,value);
+		PWL::Construct(ptr,value);
 	}
-	template<class T>void allocator<T>::construct(T* ptr, T&& value)
+	template<class T>void allocator<T>::Construct(T* ptr, T&& value)
 	{
-		PWL::construct(ptr,PWL::move(value));
-	}
-
-	template<class T>template<class ...Args>void allocator<T>::construct(T* ptr,Args&&... args)
-	{
-		return PWL::construct(ptr, PWL::forward<Args>(args)...);
+		PWL::Construct(ptr,PWL::Move(value));
 	}
 
-	template<class T>void allocator<T>::destroy(T* ptr)
+	template<class T>template<class ...Args>void allocator<T>::Construct(T* ptr,Args&&... args)
 	{
-		PWL::destroy(ptr);
+		return PWL::Construct(ptr, PWL::forward<Args>(args)...);
 	}
-	template<class T>void allocator<T>::destroy(T* first,T* last)
+
+	template<class T>void allocator<T>::Destroy(T* ptr)
 	{
-		PWL::destroy(first, last);
+		PWL::Destroy(ptr);
+	}
+	template<class T>void allocator<T>::Destroy(T* first,T* last)
+	{
+		PWL::Destroy(first, last);
 	}
 }
