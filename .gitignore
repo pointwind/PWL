@@ -1,0 +1,19 @@
+
+.vs/HELLO world/v15/.suo
+*.db
+*.ipch
+*.bsc
+*.exe
+*.ilk
+*.pdb
+*.lastbuildstate
+*.tlog
+*.sbr
+*.obj
+*.log
+*.idb
+*.sdf
+*.suo
+HELLO world.vcxproj
+HELLO world.vcxproj.filters
+HELLO world.vcxproj.user
