@@ -158,4 +158,107 @@ namespace PWL
 			return x.second;
 		}
 	};
+
+	// 对于大部分类型，hash function 什么都不做
+	template <class Key>
+	struct Hash {};
+
+	template<class T>
+	struct Hash<T*>
+	{
+		size_t operator()(T* p) const noexcept
+		{
+			return reinterpret_cast<size_t>(p);
+		}
+	};
+
+
+	// 对于整型类型，只是返回原值
+#define PWL_TRIVIAL_HASH_FCN(Type)         \
+template <> struct Hash<Type>                \
+{                                            \
+  size_t operator()(Type val) const noexcept \
+  { return static_cast<size_t>(val); }       \
+};											
+
+
+
+	PWL_TRIVIAL_HASH_FCN(bool)
+
+	PWL_TRIVIAL_HASH_FCN(char)
+
+	PWL_TRIVIAL_HASH_FCN(signed char)
+
+	PWL_TRIVIAL_HASH_FCN(unsigned char)
+
+	PWL_TRIVIAL_HASH_FCN(wchar_t)
+
+	PWL_TRIVIAL_HASH_FCN(char16_t)
+
+	PWL_TRIVIAL_HASH_FCN(char32_t)
+
+	PWL_TRIVIAL_HASH_FCN(short)
+
+	PWL_TRIVIAL_HASH_FCN(unsigned short)
+
+	PWL_TRIVIAL_HASH_FCN(int)
+
+	PWL_TRIVIAL_HASH_FCN(unsigned int)
+
+	PWL_TRIVIAL_HASH_FCN(long)
+
+	PWL_TRIVIAL_HASH_FCN(unsigned long)
+
+	PWL_TRIVIAL_HASH_FCN(long long)
+
+	PWL_TRIVIAL_HASH_FCN(unsigned long long)
+
+#undef MYSTL_TRIVIAL_HASH_FCN
+
+
+		// 对于浮点数，逐位哈希
+		inline size_t Bitwise_Hash(const unsigned char* first, size_t count)
+	{
+#if (_MSC_VER && _WIN64) || ((__GNUC__ || __clang__) &&__SIZEOF_POINTER__ == 8)
+		const size_t fnv_offset = 14695981039346656037ull;
+		const size_t fnv_prime = 1099511628211ull;
+#else
+		const size_t fnv_offset = 2166136261u;
+		const size_t fnv_prime = 16777619u;
+#endif
+		size_t result = fnv_offset;
+		for (size_t i = 0; i < count; ++i)
+		{
+			result ^= (size_t)first[i];
+			result *= fnv_prime;
+		}
+		return result;
+	}
+
+	template <>
+	struct Hash<float>
+	{
+		size_t operator()(const float& val)
+		{
+			return val == 0.0f ? 0 : Bitwise_Hash((const unsigned char*)&val, sizeof(float));
+		}
+	};
+
+	template <>
+	struct Hash<double>
+	{
+		size_t operator()(const double& val)
+		{
+			return val == 0.0f ? 0 : Bitwise_Hash((const unsigned char*)&val, sizeof(double));
+		}
+	};
+
+	template <>
+	struct Hash<long double>
+	{
+		size_t operator()(const long double& val)
+		{
+			return val == 0.0f ? 0 : Bitwise_Hash((const unsigned char*)&val, sizeof(long double));
+		}
+	};
 }
