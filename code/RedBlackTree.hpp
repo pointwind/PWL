@@ -3,6 +3,8 @@
 #include <string>
 #include <iostream>
 #include <deque>
+namespace PWL
+{
 template<typename T>class Node
 {
 public:
@@ -28,32 +30,32 @@ public:
 		root->left = nil;
 		root->right = nil;
 	}
-	void insert_node(Node<T>* student);//Ôö¼Ó½Úµã
-	void delete_node(Node<T>* student);//É¾³ı½Úµã
+	void insert_node(Node<T>* student);//å¢åŠ èŠ‚ç‚¹
+	void delete_node(Node<T>* student);//åˆ é™¤èŠ‚ç‚¹
 
-	Node<T>* search(Node<T>* student)const;//°´keyËÑË÷Ä³¸ö¹Ì¶¨µÄ½Úµã£¬²¢·µ»ØËû
+	Node<T>* search(Node<T>* student)const;//æŒ‰keyæœç´¢æŸä¸ªå›ºå®šçš„èŠ‚ç‚¹ï¼Œå¹¶è¿”å›ä»–
 
-	void left_rotate(Node<T>* student);//×óĞı
-	void right_rotate(Node<T>* student);//ÓÒĞı
-
-
-	void display(Node<T>* root)const;  //Ç°Ğò±éÀú
-	void or_display(Node<T>* root)const;//ÖĞĞò±éÀú
-	void la_display(Node<T>* root)const;//ºóĞò±éÀú
-	void layer_display(Node<T>* root);//²ãĞò±éÀú
+	void left_rotate(Node<T>* student);//å·¦æ—‹
+	void right_rotate(Node<T>* student);//å³æ—‹
 
 
-	void insert_node_fix(Node<T>* student);//Ôö¼Ó½ÚµãĞŞÕı
-	void delete_node_fix(Node<T>* student);//É¾³ı½ÚµãĞŞÕı
+	void display(Node<T>* root)const;  //å‰åºéå†
+	void or_display(Node<T>* root)const;//ä¸­åºéå†
+	void la_display(Node<T>* root)const;//ååºéå†
+	void layer_display(Node<T>* root);//å±‚åºéå†
+
+
+	void insert_node_fix(Node<T>* student);//å¢åŠ èŠ‚ç‚¹ä¿®æ­£
+	void delete_node_fix(Node<T>* student);//åˆ é™¤èŠ‚ç‚¹ä¿®æ­£
 	void instead(Node<T>* lhs, Node<T>* rhs);//lhs will been deleted,and the lhs' parent will point to the rhs
 	Node<T>* root;  //the root node
 	Node<T> rooting;//
 	Node<T>* nil;  //the nil node
 	Node<T> nilling;//
-	int count = 0;//´ú±íÊÇ·ñÎªµÚÒ»´Î´´½¨
+	int count = 0;//ä»£è¡¨æ˜¯å¦ä¸ºç¬¬ä¸€æ¬¡åˆ›å»º
 };
 
-template<typename T>void RB_tree<T>::left_rotate(Node<T>* student)//×óĞı
+template<typename T>void RB_tree<T>::left_rotate(Node<T>* student)//å·¦æ—‹
 {
 	Node<T>* y = student->right;
 	student->right = y->left;
@@ -71,7 +73,7 @@ template<typename T>void RB_tree<T>::left_rotate(Node<T>* student)//×óĞı
 	y->left = student;
 	student->par = y;
 }
-template<typename T>void RB_tree<T>::right_rotate(Node<T>* student)//ÓÒĞı
+template<typename T>void RB_tree<T>::right_rotate(Node<T>* student)//å³æ—‹
 {
 	Node<T>* y = student->left;
 	student->left = y->right;
@@ -91,7 +93,7 @@ template<typename T>void RB_tree<T>::right_rotate(Node<T>* student)//ÓÒĞı
 
 }
 
-template<typename T>void RB_tree<T>::insert_node(Node<T>* student)//Ôö¼Ó½Úµã
+template<typename T>void RB_tree<T>::insert_node(Node<T>* student)//å¢åŠ èŠ‚ç‚¹
 {
 	student->left = nil;
 	student->right = nil;
@@ -128,7 +130,7 @@ template<typename T>void RB_tree<T>::insert_node(Node<T>* student)//Ôö¼Ó½Úµã
 	}
 	count = 1;
 }
-template<typename T>void RB_tree<T>::insert_node_fix(Node<T>* student)//Ôö¼Ó½ÚµãĞŞÕı
+template<typename T>void RB_tree<T>::insert_node_fix(Node<T>* student)//å¢åŠ èŠ‚ç‚¹ä¿®æ­£
 {
 	while (student->par->color == false && student->par != nil)
 	{
@@ -327,7 +329,7 @@ template<typename T>void RB_tree<T>::la_display(Node<T>* root)const//la-print al
 	display(root->right);
 	printf("%d \n", root->number);
 }
-template<typename T>void RB_tree<T>::layer_display(Node<T>* root)//²ãĞò±éÀú
+template<typename T>void RB_tree<T>::layer_display(Node<T>* root)//å±‚åºéå†
 {
 	std::deque<Node<T>*> que;
 	que.push_back(root);
@@ -352,7 +354,7 @@ template<typename T>void RB_tree<T>::layer_display(Node<T>* root)//²ãĞò±éÀú
 
 
 
-template<typename T>Node<T>* RB_tree<T>::search(Node<T>* student)const//ËÑË÷Ö¸µãkeyµÄ½Úµã
+template<typename T>Node<T>* RB_tree<T>::search(Node<T>* student)const//æœç´¢æŒ‡ç‚¹keyçš„èŠ‚ç‚¹
 {
 	Node<T>* ptr = root;
 	while (ptr != nil) {
@@ -370,4 +372,5 @@ template<typename T>Node<T>* RB_tree<T>::search(Node<T>* student)const//ËÑË÷Ö¸µã
 		}
 	}
 	return nil;
+}
 }
