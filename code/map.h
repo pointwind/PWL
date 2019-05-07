@@ -12,7 +12,5 @@ namespace PWL
 		using value_type = PWL::pair<key_type, map_type>;
 		using key_compare = Compare;
 	public:
-
-
 	};
 }
